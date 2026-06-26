@@ -15,10 +15,15 @@
   </header>
   <section class="sb-profile-block">
     <div class="sb-media-cover sb-media-zone" data-media="cover" id="sbMediaCover"></div>
-    <div class="sb-topbar-spacer"></div>
-    <div class="sb-media-profile sb-media-zone" data-media="profile" id="sbMediaProfile"></div>
+    <div class="sb-profile-row">
+      <div class="sb-media-profile sb-media-zone" data-media="profile" id="sbMediaProfile"></div>
+      <div class="sb-profile-meta">
+        <b id="sbProfileTitle">SuperBooking</b>
+        <span id="sbProfileSubtitle">loading…</span>
+      </div>
+    </div>
   </section>
-  <section class="sb-card sb-video-card"><div class="sb-video-shell sb-media-zone" data-media="video" id="sbVideoShell"></div></section>
+  <section class="sb-card sb-video-card sb-video-below-profile"><div class="sb-video-shell sb-media-zone" data-media="video" id="sbVideoShell"></div></section>
   <div class="sb-media-bg-zone sb-media-zone sb-hidden" data-media="background" id="sbMediaBgZone">◎ Background</div>
   <section class="sb-section-title"><h2>Book</h2><small class="sb-muted">Instant Astranov presence</small></section>
   <div class="sb-card">
@@ -90,6 +95,8 @@ async function init() {
   adapter = SuperBookingAdapters.tenant(CONFIG);
   SB.initShell(CONFIG);
   document.getElementById('sbDomain').textContent = CONFIG.domain;
+  document.getElementById('sbProfileTitle').textContent = CONFIG.branding?.title || CONFIG.siteId;
+  document.getElementById('sbProfileSubtitle').textContent = CONFIG.branding?.subtitle || CONFIG.domain;
   SB.renderContactBar('sbContactBar', CONFIG.contact, CONFIG.branding);
   await adapter.connect();
   siteMedia = SuperBookingMedia.init(adapter, CONFIG, {
