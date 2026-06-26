@@ -75,5 +75,15 @@ window.AstranovAuthBridge = {
     this.session = data?.session || null;
     this.user = this.session?.user || null;
     return this.session;
+  },
+
+  async signInOAuth(provider = 'google') {
+    if (!this.client) throw new Error('Auth not ready');
+    const redirectTo = window.location.origin + window.location.pathname + window.location.search;
+    const { error } = await this.client.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo, skipBrowserRedirect: false }
+    });
+    if (error) throw error;
   }
 };
