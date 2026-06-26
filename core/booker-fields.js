@@ -25,7 +25,10 @@ window.SuperBookingFields = {
       { id: 'employee', stage: 'extras', type: 'select', label: 'Preferred instructor', dynamic: 'employees', modes: ['slot'] },
       { id: 'referral', stage: 'extras', type: 'select', label: 'How did you find us?', dynamic: 'referrals', modes: ['slot'] },
       { id: 'comments', stage: 'extras', type: 'textarea', label: 'Comments', modes: ['slot'] },
-      { id: 'agreement_ack', stage: 'confirm', type: 'text', label: 'Agreement acknowledgement', placeholder: 'Type I AGREE after reading agreement', modes: ['slot'] }
+      { id: 'agreement_ack', stage: 'confirm', type: 'select', label: 'Agreement acknowledgement', required: true, options: [
+        { value: '', label: 'Open/download agreement before verification' },
+        { value: 'I opened, downloaded and will bring the signed agreement', label: 'I opened, downloaded and will bring the signed agreement' }
+      ], modes: ['slot'] }
     ],
     restaurant: [
       { id: 'date', stage: 'schedule', type: 'date', label: 'Date', required: true, modes: ['slot'] },

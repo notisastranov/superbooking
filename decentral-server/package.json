@@ -1,0 +1,12 @@
+{
+  "name": "astranov-decentral-server",
+  "version": "1.0.0",
+  "description": "Astranov Decentralized Server — SuperBooking sync for Win/Mac/Android/iOS nodes",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

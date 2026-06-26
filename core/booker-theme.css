@@ -78,4 +78,11 @@ body.sb-body:after{
 .sb-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(73,183,255,.50),transparent);margin:11px 0}
 .sb-product-info{font-size:13px;color:var(--sb-muted);margin:6px 0 10px}
 .sb-stage-label{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--sb-accent);margin:0 0 8px}
+.sb-agreement-box{margin:10px 0;padding:10px;border:1px solid rgba(73,183,255,.28);border-radius:14px;background:rgba(0,7,15,.45)}
+.sb-agreement-box b{display:block;margin-bottom:6px;color:var(--sb-accent);font-family:var(--sb-display);font-size:14px}
+.sb-agreement-img{display:block;max-width:100%;border-radius:12px;border:1px solid var(--sb-line);margin:8px auto}
+.sb-msgs{max-height:240px;overflow:auto;border:1px solid rgba(73,183,255,.22);border-radius:13px;padding:8px;margin:8px 0;background:rgba(0,7,15,.55)}
+.sb-msg{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;line-height:1.45}
+.sb-msg:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.sb-admin-grid{display:grid;gap:8px}
 @media(min-width:720px){.sb-app{width:min(100%,960px)}.sb-desktop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}}

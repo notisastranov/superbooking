@@ -135,7 +135,7 @@ window.SuperBooking = (() => {
         return { value: t, label: `${t} · ${left}/${cap} available`, disabled: left <= 0 };
       });
     }
-    if (field.options) return field.options.map(o => ({ value: o === 'Any' ? '' : o, label: o }));
+    if (field.options) return field.options.map(o => typeof o === 'object' ? o : ({ value: o === 'Any' ? '' : o, label: o }));
     return [];
   }
 
