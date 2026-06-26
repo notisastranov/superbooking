@@ -10,8 +10,8 @@
 <body class="sb-body">
 <div class="sb-app" id="top">
   <header class="sb-topbar">
-    <div class="sb-brand" id="sbBrand"><b>Astranov Sites</b><span id="sbDomain">loading…</span></div>
-    <button class="sb-btn ghost tiny sb-hidden" id="loginBtn" type="button">Owner</button>
+    <div class="sb-brand" id="sbBrand"><b id="sbBrandTitle">Astranov Sites</b><span id="sbDomain">loading…</span></div>
+    <button class="sb-btn ghost tiny" id="loginBtn" type="button">Sign in</button>
   </header>
   <section class="sb-profile-block">
     <div class="sb-media-cover sb-media-zone" data-media="cover" id="sbMediaCover"></div>
@@ -39,6 +39,14 @@
   </footer>
 </div>
 <div class="sb-toast" id="sbToast"></div>
+<div class="sb-modal" id="loginModal">
+  <div class="sb-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-family:var(--sb-display);color:var(--sb-accent);margin:0">Astranov Identity</h2><button class="sb-btn ghost tiny" onclick="closeLogin()">Close</button></div>
+    <p class="sb-muted">One account for all *.astranov.eu sites — or <a href="https://astranov.eu" target="_blank" rel="noopener" style="color:var(--sb-accent)">sign in on the globe</a>.</p>
+    <div class="sb-actions" style="margin:8px 0"><button class="sb-btn" type="button" id="authGoogleBtn">Google</button><button class="sb-btn ghost" type="button" id="authFacebookBtn">Facebook</button></div>
+    <p id="loginError" class="sb-muted" style="color:var(--sb-bad,#ff7f9a);min-height:18px"></p>
+  </div>
+</div>
 <div class="sb-modal" id="sbMediaModal">
   <div class="sb-sheet">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -58,15 +66,19 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../core/astranov-shell.js"></script>
 <script src="../core/superbooking-config.js"></script>
+<script src="../core/astranov-auth-bridge.js"></script>
 <script src="../core/superbooking-decentral.js"></script>
 <script src="../core/booker-fields.js"></script>
 <script src="../core/booker-core.js"></script>
 <script src="../core/booker-adapters.js"></script>
 <script src="../core/superbooking-media.js"></script>
+<script src="../core/astranov-sites-editor.js"></script>
 <script>
 const SB = window.AstranovSites || window.SuperBooking;
 const host = location.hostname;
+const $ = id => document.getElementById(id);
 
 async function loadSiteConfig() {
   const base = applyCentralDatabase({ database: 'central' });
@@ -88,24 +100,47 @@ async function loadSiteConfig() {
   });
 }
 
-let CONFIG, adapter, siteMedia, formState = { activeStage: 'schedule', values: {} };
+let CONFIG, adapter, siteMedia, siteEditor, formState = { activeStage: 'schedule', values: {} };
+
+function bindAuth() {
+  $('loginBtn')?.addEventListener('click', async () => {
+    const s = window.AstranovAuthBridge?.getCentralSession?.();
+    if (s) {
+      await window.AstranovAuthBridge?.client?.auth?.signOut?.();
+      siteMedia?.refresh?.();
+      siteEditor?.refresh?.();
+      $('loginBtn').textContent = 'Sign in';
+      return;
+    }
+    $('loginModal')?.classList.add('show');
+  });
+  $('authGoogleBtn')?.addEventListener('click', () => AstranovAuthBridge.signInOAuth('google').catch(e => SB.toast(e.message)));
+  $('authFacebookBtn')?.addEventListener('click', () => AstranovAuthBridge.signInOAuth('facebook').catch(e => SB.toast(e.message)));
+}
+window.closeLogin = () => $('loginModal')?.classList.remove('show');
 
 async function init() {
   CONFIG = await loadSiteConfig();
   adapter = SuperBookingAdapters.tenant(CONFIG);
-  SB.initShell(CONFIG);
-  document.getElementById('sbDomain').textContent = CONFIG.domain;
-  document.getElementById('sbProfileTitle').textContent = CONFIG.branding?.title || CONFIG.siteId;
-  document.getElementById('sbProfileSubtitle').textContent = CONFIG.branding?.subtitle || CONFIG.domain;
-  SB.renderContactBar('sbContactBar', CONFIG.contact, CONFIG.branding);
   await adapter.connect();
-  siteMedia = SuperBookingMedia.init(adapter, CONFIG, {
-    toast: m => SB.toast(m),
-    isOwner: () => false
-  });
+  SB.initShell(CONFIG);
+  $('sbDomain').textContent = CONFIG.domain;
+  $('sbProfileTitle').textContent = CONFIG.branding?.title || CONFIG.siteId;
+  $('sbProfileSubtitle').textContent = CONFIG.branding?.subtitle || CONFIG.domain;
+  if ($('sbBrandTitle')) $('sbBrandTitle').textContent = CONFIG.branding?.title || 'Astranov Sites';
+  SB.renderContactBar('sbContactBar', CONFIG.contact, CONFIG.branding);
+  siteMedia = (window.AstranovSitesMedia || SuperBookingMedia).init(adapter, CONFIG, { toast: m => SB.toast(m) });
+  siteEditor = (window.AstranovSitesEditor || window.SuperBookingEditor)?.init(adapter, CONFIG, { toast: m => SB.toast(m) });
   SB.renderProgressiveForm('progressiveForm', CONFIG, formState);
-  document.getElementById('submitBtn').onclick = async () => {
-    const d = SB.readFormData(document.getElementById('bookingForm'));
+  bindAuth();
+  window.addEventListener('astranov-auth', () => {
+    if (AstranovAuthBridge.user) $('loginBtn').textContent = 'Sign out';
+    siteMedia?.refresh?.();
+    siteEditor?.refresh?.();
+  });
+  if (AstranovAuthBridge.user) $('loginBtn').textContent = 'Sign out';
+  $('submitBtn').onclick = async () => {
+    const d = SB.readFormData($('bookingForm'));
     if (!d.client_name || !d.client_phone) return SB.toast('Name and phone required.');
     try {
       await adapter.saveReservation({
