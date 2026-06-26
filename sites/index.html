@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#050b18" />
-  <title>SuperBooking</title>
+  <title>Astranov Sites</title>
   <link rel="stylesheet" href="../core/booker-theme.css" />
 </head>
 <body class="sb-body">
 <div class="sb-app" id="top">
   <header class="sb-topbar">
-    <div class="sb-brand" id="sbBrand"><b>SuperBooking</b><span id="sbDomain">loading…</span></div>
+    <div class="sb-brand" id="sbBrand"><b>Astranov Sites</b><span id="sbDomain">loading…</span></div>
     <button class="sb-btn ghost tiny sb-hidden" id="loginBtn" type="button">Owner</button>
   </header>
   <section class="sb-profile-block">
@@ -18,7 +18,7 @@
     <div class="sb-profile-row">
       <div class="sb-media-profile sb-media-zone" data-media="profile" id="sbMediaProfile"></div>
       <div class="sb-profile-meta">
-        <b id="sbProfileTitle">SuperBooking</b>
+        <b id="sbProfileTitle">Astranov Sites</b>
         <span id="sbProfileSubtitle">loading…</span>
       </div>
     </div>
@@ -65,7 +65,7 @@
 <script src="../core/booker-adapters.js"></script>
 <script src="../core/superbooking-media.js"></script>
 <script>
-const SB = SuperBooking;
+const SB = window.AstranovSites || window.SuperBooking;
 const host = location.hostname;
 
 async function loadSiteConfig() {

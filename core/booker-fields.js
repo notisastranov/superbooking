@@ -1,5 +1,5 @@
-/* Progressive field presets — only fields matching businessType + stage are shown */
-window.SuperBookingFields = {
+/* Astranov Sites — progressive field presets by businessType + stage */
+window.AstranovSitesFields = {
   stages: ['schedule', 'product', 'details', 'extras', 'contact', 'confirm'],
   presets: {
     yacht_charter: [
@@ -79,3 +79,4 @@ window.SuperBookingFields = {
     return merged.filter(f => !f.modes || f.modes.includes(mode));
   }
 };
+window.SuperBookingFields = window.AstranovSitesFields;

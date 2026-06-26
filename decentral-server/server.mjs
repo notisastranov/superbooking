@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Astranov Decentralized Server — SuperBooking sync relay
+ * Astranov Decentralized Server — Astranov Sites sync relay
  * Run on Windows / Mac / Linux: node server.mjs
  * Default: http://0.0.0.0:8787/superbooking/sync
  */
@@ -104,5 +104,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`Astranov Decentralized Server listening on http://${HOST === '0.0.0.0' ? '127.0.0.1' : HOST}:${PORT}`);
-  console.log(`SuperBooking sync: POST http://127.0.0.1:${PORT}/superbooking/sync`);
+  console.log(`Astranov Sites sync: POST http://127.0.0.1:${PORT}/superbooking/sync`);
 });

@@ -1,5 +1,5 @@
-/* SuperBooking site media — profile, cover, video, background (owner click → Change) */
-window.SuperBookingMedia = {
+/* Astranov Sites media — profile, cover, video, background (owner click → Change) */
+window.AstranovSitesMedia = {
   KEYS: ['profile', 'cover', 'video', 'background'],
   LABELS: { profile: 'Profile photo', cover: 'Cover image', video: 'Hero video', background: 'Page background' },
   ACCEPT: {
@@ -97,7 +97,7 @@ window.SuperBookingMedia = {
       const shell = $('sbVideoShell');
       if (!shell) return;
       const uploaded = state.media.video;
-      const yt = SuperBooking.youtubeId(state.media.youtubeUrl || config.youtubeUrl || config.videoUrl || config.youtubeVideoId);
+      const yt = (window.AstranovSites || window.SuperBooking).youtubeId(state.media.youtubeUrl || config.youtubeUrl || config.videoUrl || config.youtubeVideoId);
 
       if (uploaded && !uploaded.includes('youtube')) {
         const isVideo = state.media.videoType?.startsWith('video/') || /\.(mp4|webm|mov)/i.test(uploaded);
@@ -111,7 +111,7 @@ window.SuperBookingMedia = {
       }
 
       if (yt) {
-        SuperBooking.renderVideoHero('sbVideoShell', {
+        (window.AstranovSites || window.SuperBooking).renderVideoHero('sbVideoShell', {
           ...config,
           youtubeUrl: state.media.youtubeUrl || config.youtubeUrl || config.videoUrl,
           youtubeVideoId: yt,
@@ -238,3 +238,4 @@ window.SuperBookingMedia = {
     };
   }
 };
+window.SuperBookingMedia = window.AstranovSitesMedia;

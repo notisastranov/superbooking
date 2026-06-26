@@ -1,5 +1,5 @@
-/* SuperBooking messenger — slot sites (FrogSchool fs_* messages) */
-window.SuperBookingMessenger = {
+/* Astranov Sites messenger — slot sites (FrogSchool fs_* messages) */
+window.AstranovSitesMessenger = {
   init(adapter, config, opts = {}) {
     const chatStore = config.storage?.chat || `sb_${config.siteId}_chat_v1`;
     const $ = id => document.getElementById(id);
@@ -115,3 +115,4 @@ window.SuperBookingMessenger = {
     return { openChat, closeChat, renderChat, sendMsg };
   }
 };
+window.SuperBookingMessenger = window.AstranovSitesMessenger;

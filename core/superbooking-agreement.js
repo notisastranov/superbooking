@@ -1,5 +1,5 @@
-/* SuperBooking agreement document — admin upload + customer acknowledgement */
-window.SuperBookingAgreement = {
+/* Astranov Sites agreement — admin upload + customer acknowledgement */
+window.AstranovSitesAgreement = {
   init(adapter, config, opts = {}) {
     const storeKey = config.storage?.agreement || `sb_${config.siteId}_agreement_v1`;
     const $ = id => document.getElementById(id);
@@ -64,3 +64,4 @@ window.SuperBookingAgreement = {
     return { loadAgreement, saveAgreement };
   }
 };
+window.SuperBookingAgreement = window.AstranovSitesAgreement;

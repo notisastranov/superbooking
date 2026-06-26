@@ -1,4 +1,4 @@
-/* Central AstranoV database — all SuperBooking tenants use this project */
+/* Astranov Sites — central AstranoV database config (all *.astranov.eu tenants) */
 window.ASTRANOV_CENTRAL_DB = {
   supabaseRef: 'lkoatrkhuigdolnjsbie',
   supabaseUrl: 'https://lkoatrkhuigdolnjsbie.supabase.co',
@@ -8,7 +8,7 @@ window.ASTRANOV_CENTRAL_DB = {
   profilesTable: 'astranov_profiles'
 };
 
-window.ASTRANOV_SUPERBOOKING_DEFAULTS = {
+window.ASTRANOV_SITES_DEFAULTS = {
   decentral: {
     enabled: true,
     syncPath: '/superbooking/sync',
@@ -17,6 +17,7 @@ window.ASTRANOV_SUPERBOOKING_DEFAULTS = {
   },
   database: 'central'
 };
+window.ASTRANOV_SUPERBOOKING_DEFAULTS = window.ASTRANOV_SITES_DEFAULTS;
 
 function astranovCentralSupabaseUrl() {
   const c = window.ASTRANOV_CENTRAL_DB;

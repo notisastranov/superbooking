@@ -1,5 +1,5 @@
-/* AstranoV SuperBooking — shared UI core */
-window.SuperBooking = (() => {
+/* Astranov Sites — multipurpose booking & web presence (evolved from SuperBooker) */
+window.AstranovSites = (() => {
   const DEFAULT = {
     siteId: 'booker',
     domain: '',
@@ -14,7 +14,7 @@ window.SuperBooking = (() => {
     supabaseAnonKey: '',
     developmentDemo: false,
     decentral: { enabled: true, syncPath: '/superbooking/sync' },
-    branding: { title: 'SuperBooking', subtitle: 'AstranoV multipurpose booking', logoUrl: '' },
+    branding: { title: 'Astranov Sites', subtitle: 'Your astranov.eu presence', logoUrl: '' },
     contact: { phone: '', vhf: '', email: '', whatsapp: '', address: '', mapUrl: '', messenger: true },
     products: [],
     employees: [],
@@ -27,7 +27,7 @@ window.SuperBooking = (() => {
   };
 
   function mergeConfig(override) {
-    const o = override || window.ASTRANOV_SUPERBOOKING_CONFIG || window.ASTRANOV_BOOKER_CONFIG || window.ASTRANOV_YACHTING_CONFIG || {};
+    const o = override || window.ASTRANOV_SITES_CONFIG || window.ASTRANOV_SUPERBOOKING_CONFIG || window.ASTRANOV_BOOKER_CONFIG || window.ASTRANOV_YACHTING_CONFIG || {};
     let cfg;
     if (window.ASTRANOV_YACHTING_CONFIG && !window.ASTRANOV_SUPERBOOKING_CONFIG && !window.ASTRANOV_BOOKER_CONFIG) {
       cfg = {
@@ -48,7 +48,7 @@ window.SuperBooking = (() => {
       const yt = o.youtubeUrl || o.videoUrl || '';
       cfg = {
         ...DEFAULT,
-        ...(window.ASTRANOV_SUPERBOOKING_DEFAULTS || {}),
+        ...(window.ASTRANOV_SITES_DEFAULTS || window.ASTRANOV_SUPERBOOKING_DEFAULTS || {}),
         ...o,
         youtubeUrl: yt,
         youtubeVideoId: o.youtubeVideoId || youtubeId(yt),
@@ -160,8 +160,8 @@ window.SuperBooking = (() => {
 
   function renderProgressiveForm(containerId, config, state = {}) {
     const box = document.getElementById(containerId);
-    if (!box || !window.SuperBookingFields) return;
-    const fields = SuperBookingFields.resolve(config);
+    if (!box || !(window.AstranovSitesFields || window.SuperBookingFields)) return;
+    const fields = (window.AstranovSitesFields || window.SuperBookingFields).resolve(config);
     const stages = [...new Set(fields.map(f => f.stage))];
     const showStage = state.activeStage || stages[0];
     box.innerHTML = stages.map(stage => {
@@ -185,7 +185,7 @@ window.SuperBooking = (() => {
   }
 
   function applyBranding(config) {
-    document.title = `${config.branding.title} · SuperBooking`;
+    document.title = `${config.branding.title} · Astranov Sites`;
     const brand = $('#sbBrand');
     if (brand) brand.innerHTML = `<b>${esc(config.branding.title)}</b><span>${esc(config.branding.subtitle || config.domain)}</span>`;
   }
@@ -201,4 +201,5 @@ window.SuperBooking = (() => {
     renderVideoHero, renderContactBar, renderProgressiveForm, readFormData, dynamicOptions, initShell
   };
 })();
-window.SuperBooker = window.SuperBooking;
+window.SuperBooking = window.AstranovSites;
+window.SuperBooker = window.AstranovSites;

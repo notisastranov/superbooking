@@ -1,6 +1,6 @@
-# AstranoV SuperBooking
+# Astranov Sites
 
-Multipurpose booking engine for all `*.astranov.eu` business subdomains. Every tenant talks to the **central AstranoV Supabase** (`lkoatrkhuigdolnjsbie`), with optional replication to **Astranov Decentralized Server** apps (Windows, Mac, Android, iOS).
+Multipurpose booking & web presence engine for all `*.astranov.eu` business subdomains (evolved from SuperBooker). Every tenant talks to the **central AstranoV Supabase** (`lkoatrkhuigdolnjsbie`), with optional replication to **Astranov Decentralized Server** apps (Windows, Mac, Android, iOS).
 
 ## Stack
 
@@ -16,7 +16,7 @@ Multipurpose booking engine for all `*.astranov.eu` business subdomains. Every t
 ```html
 <script src="core/superbooking-config.js"></script>
 <script>
-window.ASTRANOV_SUPERBOOKING_CONFIG = {
+window.ASTRANOV_SITES_CONFIG = {  // legacy: ASTRANOV_SUPERBOOKING_CONFIG
   siteId: "frogschool",
   domain: "frogschool.astranov.eu",
   businessType: "diving_school",
@@ -39,7 +39,8 @@ Omit `supabaseUrl` / `supabaseAnonKey` to auto-use central AstranoV database.
 When an Astranov node app is running, register its endpoint:
 
 ```js
-SuperBookingDecentral.registerNode('http://localhost:8787', { platform: 'windows' });
+AstranovSitesDecentral.registerNode('http://localhost:8787', { platform: 'windows' });
+// legacy alias: SuperBookingDecentral
 ```
 
 Writes replicate to `{nodeUrl}/superbooking/sync`. Offline events queue in `localStorage` and flush when the node returns.

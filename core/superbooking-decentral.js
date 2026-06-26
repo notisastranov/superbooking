@@ -1,5 +1,5 @@
-/* Replicate SuperBooking writes to Astranov Decentralized Server apps (Win/Mac/Android/iOS) */
-window.SuperBookingDecentral = {
+/* Astranov Sites — replicate writes to Decentralized Server apps (Win/Mac/Android/iOS) */
+window.AstranovSitesDecentral = {
   STORAGE_NODE: 'astranov_decentral_node_v1',
   STORAGE_QUEUE: 'astranov_superbooking_sync_queue_v1',
 
@@ -95,3 +95,4 @@ window.SuperBookingDecentral = {
     }
   }
 };
+window.SuperBookingDecentral = window.AstranovSitesDecentral;

@@ -1,5 +1,5 @@
-/* SuperBooking adapters — central AstranoV DB: range (yachting) + slot (frogschool fs_*) */
-window.SuperBookingAdapters = {
+/* Astranov Sites adapters — central DB: range (yachting) + slot (frogschool fs_*) */
+window.AstranovSitesAdapters = {
   range(config) {
     const tables = {
       profiles: 'astranov_profiles',
@@ -230,5 +230,6 @@ window.SuperBookingAdapters = {
     };
   }
 };
-window.SuperBookerAdapters = window.SuperBookingAdapters;
+window.SuperBookingAdapters = window.AstranovSitesAdapters;
+window.SuperBookerAdapters = window.AstranovSitesAdapters;
 window.SuperBookerFields = window.SuperBookingFields;
