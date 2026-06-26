@@ -11,8 +11,15 @@
 <div class="sb-app" id="top">
   <header class="sb-topbar">
     <div class="sb-brand" id="sbBrand"><b>SuperBooking</b><span id="sbDomain">loading…</span></div>
+    <button class="sb-btn ghost tiny sb-hidden" id="loginBtn" type="button">Owner</button>
   </header>
-  <section class="sb-card sb-video-card"><div class="sb-video-shell" id="sbVideoShell"></div></section>
+  <section class="sb-profile-block">
+    <div class="sb-media-cover sb-media-zone" data-media="cover" id="sbMediaCover"></div>
+    <div class="sb-topbar-spacer"></div>
+    <div class="sb-media-profile sb-media-zone" data-media="profile" id="sbMediaProfile"></div>
+  </section>
+  <section class="sb-card sb-video-card"><div class="sb-video-shell sb-media-zone" data-media="video" id="sbVideoShell"></div></section>
+  <div class="sb-media-bg-zone sb-media-zone sb-hidden" data-media="background" id="sbMediaBgZone">◎ Background</div>
   <section class="sb-section-title"><h2>Book</h2><small class="sb-muted">Instant Astranov presence</small></section>
   <div class="sb-card">
     <form id="bookingForm">
@@ -27,22 +34,40 @@
   </footer>
 </div>
 <div class="sb-toast" id="sbToast"></div>
+<div class="sb-modal" id="sbMediaModal">
+  <div class="sb-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2 style="font-family:var(--sb-display);color:var(--sb-accent);margin:0" id="sbMediaModalTitle">Media</h2>
+      <button class="sb-btn ghost tiny" type="button" id="sbMediaCloseBtn">Close</button>
+    </div>
+    <div class="sb-media-preview-box" id="sbMediaPreview"></div>
+    <div class="sb-actions" style="margin-bottom:8px">
+      <button class="sb-btn" type="button" id="sbMediaChangeBtn">Change</button>
+      <input id="sbMediaFile" type="file" class="sb-hidden" />
+    </div>
+    <div class="sb-field sb-hidden" id="sbMediaUrlRow">
+      <label class="sb-label">YouTube URL</label>
+      <input id="sbMediaYoutubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
+    </div>
+    <button class="sb-btn red" type="button" id="sbMediaApplyBtn">Save</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../core/superbooking-config.js"></script>
 <script src="../core/superbooking-decentral.js"></script>
 <script src="../core/booker-fields.js"></script>
 <script src="../core/booker-core.js"></script>
 <script src="../core/booker-adapters.js"></script>
+<script src="../core/superbooking-media.js"></script>
 <script>
 const SB = SuperBooking;
 const host = location.hostname;
-const slug = host.endsWith('.astranov.eu') ? host.replace(/\.astranov\.eu$/, '') : (new URLSearchParams(location.search).get('site') || 'demo');
 
 async function loadSiteConfig() {
   const base = applyCentralDatabase({ database: 'central' });
   const supa = window.supabase.createClient(base.supabaseUrl, base.supabaseAnonKey);
   const { data, error } = await supa.rpc('booker_site_by_domain', { p_domain: host });
-  if (error || !data?.id) throw new Error('Site not found — create yours at astranov.eu (+ button or ask the collective).');
+  if (error || !data?.id) throw new Error('Site not found — create yours at astranov.eu (+ button).');
   return SB.mergeConfig({
     siteId: data.id,
     domain: data.domain || host,
@@ -50,15 +75,15 @@ async function loadSiteConfig() {
     mode: data.mode || 'slot',
     branding: data.branding || {},
     contact: data.contact || {},
+    media: data.media || data.config?.media || {},
+    youtubeUrl: data.config?.youtubeUrl || data.media?.youtubeUrl || '',
     products: data.config?.products || [],
     timeslots: data.config?.timeslots || { '10:00': 4, '14:00': 4 },
-    employees: data.config?.employees || [],
-    referrals: data.config?.referrals || [],
     decentral: { enabled: true, nodeUrl: 'http://127.0.0.1:8787' }
   });
 }
 
-let CONFIG, adapter, formState = { activeStage: 'schedule', values: {} };
+let CONFIG, adapter, siteMedia, formState = { activeStage: 'schedule', values: {} };
 
 async function init() {
   CONFIG = await loadSiteConfig();
@@ -67,6 +92,10 @@ async function init() {
   document.getElementById('sbDomain').textContent = CONFIG.domain;
   SB.renderContactBar('sbContactBar', CONFIG.contact, CONFIG.branding);
   await adapter.connect();
+  siteMedia = SuperBookingMedia.init(adapter, CONFIG, {
+    toast: m => SB.toast(m),
+    isOwner: () => false
+  });
   SB.renderProgressiveForm('progressiveForm', CONFIG, formState);
   document.getElementById('submitBtn').onclick = async () => {
     const d = SB.readFormData(document.getElementById('bookingForm'));

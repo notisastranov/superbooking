@@ -45,10 +45,14 @@ window.SuperBooking = (() => {
         contact: o.contact || DEFAULT.contact
       };
     } else {
+      const yt = o.youtubeUrl || o.videoUrl || '';
       cfg = {
         ...DEFAULT,
         ...(window.ASTRANOV_SUPERBOOKING_DEFAULTS || {}),
         ...o,
+        youtubeUrl: yt,
+        youtubeVideoId: o.youtubeVideoId || youtubeId(yt),
+        media: { ...(o.media || {}), ...(o.branding?.media || {}) },
         branding: { ...DEFAULT.branding, ...(o.branding || {}) },
         contact: { ...DEFAULT.contact, ...(o.contact || {}) },
         decentral: { ...DEFAULT.decentral, ...(o.decentral || {}) }
