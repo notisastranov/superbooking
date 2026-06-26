@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050b18" />
+  <title>SuperBooking</title>
+  <link rel="stylesheet" href="../core/booker-theme.css" />
+</head>
+<body class="sb-body">
+<div class="sb-app" id="top">
+  <header class="sb-topbar">
+    <div class="sb-brand" id="sbBrand"><b>SuperBooking</b><span id="sbDomain">loading…</span></div>
+  </header>
+  <section class="sb-card sb-video-card"><div class="sb-video-shell" id="sbVideoShell"></div></section>
+  <section class="sb-section-title"><h2>Book</h2><small class="sb-muted">Instant Astranov presence</small></section>
+  <div class="sb-card">
+    <form id="bookingForm">
+      <div id="progressiveForm"></div>
+      <div class="sb-divider"></div>
+      <div class="sb-actions"><button class="sb-btn red" type="button" id="submitBtn">Request booking</button></div>
+    </form>
+  </div>
+  <footer class="sb-card" style="margin-top:14px">
+    <h3 style="margin:0 0 6px;font-family:var(--sb-display);color:var(--sb-accent);font-size:16px">Contact</h3>
+    <div id="sbContactBar"></div>
+  </footer>
+</div>
+<div class="sb-toast" id="sbToast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../core/superbooking-config.js"></script>
+<script src="../core/superbooking-decentral.js"></script>
+<script src="../core/booker-fields.js"></script>
+<script src="../core/booker-core.js"></script>
+<script src="../core/booker-adapters.js"></script>
+<script>
+const SB = SuperBooking;
+const host = location.hostname;
+const slug = host.endsWith('.astranov.eu') ? host.replace(/\.astranov\.eu$/, '') : (new URLSearchParams(location.search).get('site') || 'demo');
+
+async function loadSiteConfig() {
+  const base = applyCentralDatabase({ database: 'central' });
+  const supa = window.supabase.createClient(base.supabaseUrl, base.supabaseAnonKey);
+  const { data, error } = await supa.rpc('booker_site_by_domain', { p_domain: host });
+  if (error || !data?.id) throw new Error('Site not found — create yours at astranov.eu (+ button or ask the collective).');
+  return SB.mergeConfig({
+    siteId: data.id,
+    domain: data.domain || host,
+    businessType: data.business_type || 'generic',
+    mode: data.mode || 'slot',
+    branding: data.branding || {},
+    contact: data.contact || {},
+    products: data.config?.products || [],
+    timeslots: data.config?.timeslots || { '10:00': 4, '14:00': 4 },
+    employees: data.config?.employees || [],
+    referrals: data.config?.referrals || [],
+    decentral: { enabled: true, nodeUrl: 'http://127.0.0.1:8787' }
+  });
+}
+
+let CONFIG, adapter, formState = { activeStage: 'schedule', values: {} };
+
+async function init() {
+  CONFIG = await loadSiteConfig();
+  adapter = SuperBookingAdapters.tenant(CONFIG);
+  SB.initShell(CONFIG);
+  document.getElementById('sbDomain').textContent = CONFIG.domain;
+  SB.renderContactBar('sbContactBar', CONFIG.contact, CONFIG.branding);
+  await adapter.connect();
+  SB.renderProgressiveForm('progressiveForm', CONFIG, formState);
+  document.getElementById('submitBtn').onclick = async () => {
+    const d = SB.readFormData(document.getElementById('bookingForm'));
+    if (!d.client_name || !d.client_phone) return SB.toast('Name and phone required.');
+    try {
+      await adapter.saveReservation({
+        client_name: d.client_name, client_phone: d.client_phone, client_email: d.client_email,
+        date: d.date, time: d.time, product: d.product, status: 'pending', payment: 'ON REQUEST'
+      });
+      SB.toast('Booking request sent.');
+    } catch (e) { SB.toast(e.message); }
+  };
+}
+
+document.addEventListener('DOMContentLoaded', () => init().catch(e => SB.toast(e.message)));
+</script>
+</body>
+</html>

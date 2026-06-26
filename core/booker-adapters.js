@@ -169,6 +169,65 @@ window.SuperBookingAdapters = {
         return (config.products || []).find(p => p.name.toLowerCase() === String(name || '').toLowerCase()) || null;
       }
     };
+  },
+
+  /** Multi-tenant provisioned sites — config from booker_site_by_domain, reservations in booker_reservations */
+  tenant(config) {
+    let supa = null;
+    const storeKey = config.storage?.reservations || `sb_${config.siteId}_reservations`;
+
+    return {
+      async connect() {
+        if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase) return null;
+        supa = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        return supa;
+      },
+      getSession() { return null; },
+      setSession() {},
+      async rpc(name, args) {
+        if (!supa) return null;
+        const { data, error } = await supa.rpc(name, args);
+        if (error) throw error;
+        return data;
+      },
+      async login() { throw new Error('Login coming soon for provisioned sites.'); },
+      async saveReservation(r) {
+        if (!supa || !config.siteId) throw new Error('Site not configured.');
+        const payload = {
+          site_id: config.siteId,
+          client_name: r.client_name || r.customer,
+          client_phone: r.client_phone || r.phone,
+          client_email: r.client_email || r.email,
+          mode: config.mode || 'slot',
+          slot_date: r.date,
+          slot_time: r.time,
+          party_size: r.divers || r.party_size || null,
+          payload: r,
+          status: r.status || 'pending',
+          payment_method: r.payment || null,
+          currency: config.currency || 'EUR',
+          total_price: r.productPrice || null
+        };
+        const { error } = await supa.from('booker_reservations').insert(payload);
+        if (error) throw error;
+        const local = JSON.parse(localStorage.getItem(storeKey) || '[]');
+        local.push({ ...r, id: 'local-' + Date.now() });
+        localStorage.setItem(storeKey, JSON.stringify(local.slice(-100)));
+        if (window.SuperBookingDecentral?.replicate) {
+          await SuperBookingDecentral.replicate(config, 'reservation.saved', r);
+        }
+      },
+      async listReservations() {
+        return JSON.parse(localStorage.getItem(storeKey) || '[]');
+      },
+      bookedCount(date, rows) {
+        const list = rows || JSON.parse(localStorage.getItem(storeKey) || '[]');
+        return slot => list.filter(x => x.date === date && x.time === slot && x.status !== 'cancelled').length;
+      },
+      productByName(name) {
+        return (config.products || []).find(p => p.name.toLowerCase() === String(name || '').toLowerCase()) || null;
+      }
+    };
   }
 };
 window.SuperBookerAdapters = window.SuperBookingAdapters;
