@@ -18,8 +18,9 @@ window.AstranovSitesMedia = {
 
     const isOwner = () => {
       if (opts.isOwner) return opts.isOwner();
+      if (window.AstranovAuthBridge?.isSiteOwner) return true;
       const s = adapter.getSession?.();
-      return !!(s && ['admin', 'super_admin'].includes(s.role));
+      return !!(s && ((s.central && s.role === 'admin') || ['admin', 'super_admin'].includes(s.role)));
     };
 
     function fileToData(f) {
@@ -54,9 +55,15 @@ window.AstranovSitesMedia = {
     async function saveMedia() {
       localStorage.setItem(storeKey, JSON.stringify(state.media));
       const s = adapter.getSession?.();
-      if (adapter.rpc && s?.token && isOwner()) {
+      if (isOwner()) {
         try {
-          await adapter.rpc('save_setting', { p_token: s.token, p_key: 'site_media', p_value: state.media });
+          if (s?.central && window.AstranovAuthBridge?.client && config.siteId) {
+            await window.AstranovAuthBridge.client.rpc('booker_owner_save_setting', {
+              p_site_id: config.siteId, p_key: 'site_media', p_value: state.media
+            });
+          } else if (adapter.rpc && s?.token) {
+            await adapter.rpc('save_setting', { p_token: s.token, p_key: 'site_media', p_value: state.media });
+          }
         } catch { /* local ok */ }
       }
       applyAll();

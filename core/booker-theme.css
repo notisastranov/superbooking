@@ -101,6 +101,10 @@ body.sb-body:after{
 .sb-media-zone.sb-owner-edit:hover:after{background:rgba(73,183,255,.12)}
 .sb-media-zone.sb-owner-edit:before{content:"✎";position:absolute;top:8px;right:8px;z-index:4;font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(2,8,17,.82);border:1px solid rgba(73,183,255,.4);color:var(--sb-accent);opacity:0;transition:opacity .2s;pointer-events:none}
 .sb-media-zone.sb-owner-edit:hover:before{opacity:1}
+[data-as-edit].sb-owner-edit{cursor:pointer;outline:1px dashed transparent;outline-offset:3px;border-radius:6px;transition:outline-color .2s,background .2s}
+[data-as-edit].sb-owner-edit:hover{outline-color:rgba(73,183,255,.45);background:rgba(73,183,255,.06)}
+[data-as-edit].sb-owner-edit:after{content:"✎ edit";font-size:9px;color:var(--sb-accent);opacity:0;margin-left:6px}
+[data-as-edit].sb-owner-edit:hover:after{opacity:1}
 .sb-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
 .sb-media-preview-box{min-height:120px;border:1px dashed rgba(73,183,255,.35);border-radius:14px;padding:10px;margin:10px 0;display:grid;place-items:center;text-align:center}
 .sb-media-bg-zone{margin:0 0 8px;padding:8px 12px;text-align:center;font-size:11px;color:var(--sb-muted);border:1px dashed rgba(73,183,255,.22);border-radius:12px}

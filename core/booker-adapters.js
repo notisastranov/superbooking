@@ -87,9 +87,12 @@ window.AstranovSitesAdapters = {
       async connect() {
         if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase) return null;
         supa = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        await window.AstranovAuthBridge?.init?.(config);
         return supa;
       },
       getSession() {
+        const central = window.AstranovAuthBridge?.getCentralSession?.();
+        if (central) return central;
         if (session) return session;
         try { session = JSON.parse(localStorage.getItem(sessionKey) || 'null'); } catch { session = null; }
         return session;
