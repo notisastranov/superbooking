@@ -110,18 +110,25 @@ SELECT 'yachts', 'Cadet sailor pool', 'cadet', 100, true
 WHERE EXISTS (SELECT 1 FROM booker_sites WHERE id = 'yachts')
   AND NOT EXISTS (SELECT 1 FROM booker_resources WHERE site_id = 'yachts' AND role = 'cadet');
 
--- Sync yachting_yachts into booker_supply for site yachts (legacy bridge)
-INSERT INTO booker_supply (site_id, kind, name, max_passengers, price_per_day_eur, metadata, active)
-SELECT 'yachts', 'yacht', y.name, y.guest_capacity,
-  CASE WHEN y.price_week > 0 THEN round(y.price_week / 7.0) ELSE 0 END,
-  jsonb_build_object('legacy_yachting_id', y.id, 'yacht_type', y.yacht_type, 'cabins', y.cabins, 'price_week', y.price_week, 'characteristics', y.characteristics),
-  COALESCE(y.active, true)
-FROM yachting_yachts y
-WHERE EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'yachting_yachts')
-  AND NOT EXISTS (
-    SELECT 1 FROM booker_supply s
-    WHERE s.site_id = 'yachts' AND s.metadata->>'legacy_yachting_id' = y.id::text
-  );
+-- Sync yachting_yachts into booker_supply for site yachts (legacy bridge; optional table)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'yachting_yachts'
+  ) THEN
+    INSERT INTO booker_supply (site_id, kind, name, max_passengers, price_per_day_eur, metadata, active)
+    SELECT 'yachts', 'yacht', y.name, y.guest_capacity,
+      CASE WHEN y.price_week > 0 THEN round(y.price_week / 7.0) ELSE 0 END,
+      jsonb_build_object('legacy_yachting_id', y.id, 'yacht_type', y.yacht_type, 'cabins', y.cabins, 'price_week', y.price_week, 'characteristics', y.characteristics),
+      COALESCE(y.active, true)
+    FROM yachting_yachts y
+    WHERE NOT EXISTS (
+      SELECT 1 FROM booker_supply s
+      WHERE s.site_id = 'yachts' AND s.metadata->>'legacy_yachting_id' = y.id::text
+    );
+  END IF;
+END $$;
 
 GRANT SELECT ON booker_supply TO anon, authenticated;
 GRANT SELECT ON booker_resources TO anon, authenticated;
