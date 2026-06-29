@@ -25,7 +25,8 @@
   </section>
   <section class="sb-card sb-video-card sb-video-below-profile"><div class="sb-video-shell sb-media-zone" data-media="video" id="sbVideoShell"></div></section>
   <div class="sb-media-bg-zone sb-media-zone sb-hidden" data-media="background" id="sbMediaBgZone">◎ Background</div>
-  <section class="sb-section-title"><h2>Book</h2><small class="sb-muted">Instant Astranov presence</small></section>
+  <section class="sb-section-title"><h2>Book</h2><small class="sb-muted" id="sbMatchHint">Supply/demand match · activate fields in site config</small></section>
+  <div class="sb-card sb-hidden" id="sbMatchResults" style="margin-bottom:10px"></div>
   <div class="sb-card">
     <form id="bookingForm">
       <div id="progressiveForm"></div>
@@ -72,6 +73,8 @@
 <script src="../core/superbooking-decentral.js"></script>
 <script src="../core/booker-fields.js"></script>
 <script src="../core/booker-core.js"></script>
+<script src="../core/match-presets.js"></script>
+<script src="../core/match-engine.js"></script>
 <script src="../core/booker-adapters.js"></script>
 <script src="../core/superbooking-media.js"></script>
 <script src="../core/astranov-sites-editor.js"></script>
@@ -100,7 +103,7 @@ async function loadSiteConfig() {
   });
 }
 
-let CONFIG, adapter, siteMedia, siteEditor, formState = { activeStage: 'schedule', values: {} };
+let CONFIG, adapter, matchAdapter, siteMedia, siteEditor, formState = { activeStage: 'schedule', values: {} };
 
 function bindAuth() {
   $('loginBtn')?.addEventListener('click', async () => {
@@ -121,8 +124,19 @@ window.closeLogin = () => $('loginModal')?.classList.remove('show');
 
 async function init() {
   CONFIG = await loadSiteConfig();
-  adapter = SuperBookingAdapters.tenant(CONFIG);
-  await adapter.connect();
+  const me = AstranovMatchEngine?.resolveConfig?.(CONFIG);
+  if ($('sbMatchHint')) $('sbMatchHint').textContent = (me?.label || CONFIG.businessType) + ' · match ' + (me?.enabled !== false ? 'on' : 'off');
+  if (CONFIG.businessType === 'yacht_charter') {
+    adapter = SuperBookingAdapters.charter(CONFIG);
+    matchAdapter = adapter;
+  } else if (me?.enabled !== false && me?.resources?.enabled) {
+    adapter = SuperBookingAdapters.tenant(CONFIG);
+    matchAdapter = SuperBookingAdapters.match(CONFIG);
+    await matchAdapter.connect();
+  } else {
+    adapter = SuperBookingAdapters.tenant(CONFIG);
+  }
+  await adapter.connect?.();
   SB.initShell(CONFIG);
   $('sbDomain').textContent = CONFIG.domain;
   $('sbProfileTitle').textContent = CONFIG.branding?.title || CONFIG.siteId;
@@ -143,10 +157,28 @@ async function init() {
     const d = SB.readFormData($('bookingForm'));
     if (!d.client_name || !d.client_phone) return SB.toast('Name and phone required.');
     try {
-      await adapter.saveReservation({
-        client_name: d.client_name, client_phone: d.client_phone, client_email: d.client_email,
-        date: d.date, time: d.time, product: d.product, status: 'pending', payment: 'ON REQUEST'
-      });
+      if (matchAdapter?.runMatch) {
+        const mr = await matchAdapter.runMatch(d);
+        const box = $('sbMatchResults');
+        if (box && mr?.best) {
+          box.classList.remove('sb-hidden');
+          box.innerHTML = '<b>Best match</b><p class="sb-muted">' + matchAdapter.format(mr.best) + '</p>';
+        }
+        if (adapter.createBooking) {
+          await adapter.createBooking({ ...d, yacht_id: mr?.best?.supply?.id, message: d.message || d.notes }, AstranovAuthBridge?.user?.id);
+        } else {
+          await adapter.saveReservation({
+            client_name: d.client_name, client_phone: d.client_phone, client_email: d.client_email,
+            date: d.date, time: d.time, product: d.product, status: 'pending', payment: 'ON REQUEST',
+            match_total: mr?.best?.total,
+          });
+        }
+      } else {
+        await adapter.saveReservation({
+          client_name: d.client_name, client_phone: d.client_phone, client_email: d.client_email,
+          date: d.date, time: d.time, product: d.product, status: 'pending', payment: 'ON REQUEST'
+        });
+      }
       SB.toast('Booking request sent.');
     } catch (e) { SB.toast(e.message); }
   };

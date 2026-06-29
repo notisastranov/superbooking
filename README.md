@@ -8,7 +8,8 @@ Multipurpose booking & web presence engine for all `*.astranov.eu` business subd
 |-------|-------|
 | Central DB config | `core/superbooking-config.js` |
 | UI + progressive forms | `core/booker-core.js`, `core/booker-fields.js`, `core/booker-theme.css` |
-| Adapters | `core/booker-adapters.js` (`range` yachting · `slot` frogschool) |
+| Adapters | `core/booker-adapters.js` (`range` · `slot` · `match` · `charter`) |
+| Match engine | `core/match-engine.js`, `core/match-presets.js` — supply/demand for every business |
 | Decentral sync | `core/superbooking-decentral.js` |
 
 ## Configuration

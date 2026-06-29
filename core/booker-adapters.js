@@ -174,6 +174,63 @@ window.AstranovSitesAdapters = {
     };
   },
 
+  /** Universal supply/demand matcher — all business types */
+  match(config) {
+    let supa = null;
+    const engine = window.AstranovMatchEngine;
+    return {
+      async connect() {
+        if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase) return null;
+        supa = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        await window.AstranovAuthBridge?.init?.(config);
+        return supa;
+      },
+      resolveConfig() {
+        return engine?.resolveConfig?.(config) || {};
+      },
+      async runMatch(demand) {
+        if (!engine) throw new Error('match-engine.js not loaded');
+        const uid = window.AstranovAuthBridge?.user?.id || config.customer_id;
+        return engine.matchDemand(supa, { ...config, customer_id: uid }, demand);
+      },
+      async saveMatch(demand, result) {
+        return engine.persistMatch(supa, config, demand, result);
+      },
+      format(m) {
+        return engine.formatMatch(m, engine.resolveConfig(config));
+      },
+      async requestField(spec) {
+        const uid = window.AstranovAuthBridge?.user?.id;
+        return engine.requestField(supa, config.siteId, uid, spec);
+      },
+    };
+  },
+
+  /** Yacht charter — matcher + legacy yachting booking */
+  charter(config) {
+    const matchAdapter = this.match({ ...config, businessType: 'yacht_charter', mode: 'range' });
+    const rangeAdapter = this.range(config);
+    return {
+      async connect() {
+        await matchAdapter.connect();
+        await rangeAdapter.connect?.();
+        return matchAdapter;
+      },
+      async runMatch(demand) {
+        const r = await matchAdapter.runMatch(demand);
+        if (r.best && config.persistMatch !== false) {
+          try { await matchAdapter.saveMatch(r.demand, r); } catch (_) {}
+        }
+        return r;
+      },
+      format: (m) => matchAdapter.format(m),
+      filterCatalog: (items, filters) => rangeAdapter.filterCatalog(items, filters),
+      async listCatalog() { return rangeAdapter.listCatalog(); },
+      async createBooking(data, userId) { return rangeAdapter.createBooking(data, userId); },
+      requestField: (spec) => matchAdapter.requestField(spec),
+    };
+  },
+
   /** Multi-tenant provisioned sites — config from booker_site_by_domain, reservations in booker_reservations */
   tenant(config) {
     let supa = null;

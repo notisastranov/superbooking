@@ -74,9 +74,24 @@ window.AstranovSitesFields = {
     const type = config.businessType || 'generic';
     const mode = config.mode || 'slot';
     const custom = Array.isArray(config.fields) ? config.fields : [];
-    const base = [...(this.presets[type] || this.presets.generic), ...this.presets.contact];
+    const matchCfg = window.AstranovMatchEngine?.resolveConfig?.(config);
+    const activeIds = matchCfg?.demand_fields;
+    let base = [...(this.presets[type] || this.presets.generic), ...this.presets.contact];
+    if (activeIds?.length) {
+      base = base.filter((f) => activeIds.includes(f.id) || f.stage === 'contact');
+    }
     const merged = custom.length ? [...base.filter(f => !custom.some(c => c.id === f.id)), ...custom] : base;
     return merged.filter(f => !f.modes || f.modes.includes(mode));
+  },
+
+  fieldRequestLabel(config, fieldId) {
+    return {
+      id: fieldId,
+      type: 'text',
+      label: fieldId.replace(/_/g, ' '),
+      stage: 'details',
+      _requested: true,
+    };
   }
 };
 window.SuperBookingFields = window.AstranovSitesFields;
